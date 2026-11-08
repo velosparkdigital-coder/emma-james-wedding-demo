@@ -591,13 +591,35 @@ footer .f-heartline svg{width:14px; height:14px; fill:var(--accent); vertical-al
    ADMIN — button, lock + slide-in settings panel
    ========================================================== */
 .admin-btn{
-  position:fixed; right:16px; bottom:16px; z-index:60; display:flex; align-items:center; gap:7px;
-  border:1px solid var(--line); cursor:pointer; font-family:'Jost',sans-serif; font-size:.78rem; font-weight:500;
-  letter-spacing:.08em; color:var(--ink-soft); background:var(--card); border-radius:999px; padding:9px 16px;
-  box-shadow:0 10px 22px -8px rgba(90,50,40,.35); opacity:.85; transition:opacity .2s, transform .2s;
+  position:fixed; right:16px; bottom:16px; z-index:85; display:flex; align-items:center; gap:7px;
+  min-height:44px; border:1.5px solid var(--accent-deep); cursor:pointer; font-family:'Jost',sans-serif;
+  font-size:.85rem; font-weight:600; letter-spacing:.08em; color:var(--accent-deep);
+  background:var(--card); border-radius:999px; padding:10px 18px; opacity:1;
+  box-shadow:0 12px 26px -6px rgba(90,50,40,.45), 0 0 0 3px rgba(255,255,255,.5);
+  transition:transform .2s, box-shadow .2s;
 }
-.admin-btn:hover{opacity:1; transform:translateY(-2px)}
+.admin-btn:hover{transform:translateY(-2px)}
 .admin-btn svg{width:15px; height:15px; fill:var(--accent-deep)}
+.adm-qr{text-align:center; margin:4px 0 2px}
+.adm-qr canvas{width:180px; height:180px; background:#fff; border:1px solid var(--line); border-radius:12px}
+.adm-qr-url{text-align:center; font-size:.8rem; color:var(--ink-soft); word-break:break-all; margin:6px 0 12px}
+/* printable QR card — hidden on screen; printing shows ONLY this card */
+.qr-card{display:none}
+@media print{
+  body>*:not(#qrCard){display:none !important}
+  #qrCard{display:block !important}
+  @page{margin:14mm}
+  .qr-card-inner{
+    max-width:520px; margin:10mm auto 0; padding:42px 34px; text-align:center;
+    background:var(--bg); border:2px solid var(--gold); border-radius:18px;
+    box-shadow:inset 0 0 0 5px var(--bg), inset 0 0 0 7px var(--gold);
+  }
+  .qr-card-inner .qc-names{font-family:'Playfair Display',serif; font-size:2rem; font-weight:700; color:var(--ink); margin:0 0 4px}
+  .qr-card-inner .qc-date{font-size:1rem; letter-spacing:.14em; text-transform:uppercase; color:var(--accent-deep); margin:0 0 22px}
+  .qr-card-inner canvas{width:330px; height:330px}
+  .qr-card-inner .qc-line{font-family:'Playfair Display',serif; font-size:1.25rem; color:var(--ink); margin:22px 0 6px}
+  .qr-card-inner .qc-url{font-size:.8rem; color:var(--ink-soft); word-break:break-all; margin:0}
+}
 .adm-scrim{position:fixed; inset:0; z-index:100; background:rgba(30,18,20,.45); opacity:0; visibility:hidden; transition:opacity .35s ease, visibility .35s}
 .adm-scrim.open{opacity:1; visibility:visible}
 .admin-panel{
@@ -943,6 +965,17 @@ footer .f-heartline svg{width:14px; height:14px; fill:var(--accent); vertical-al
   </div>
 </div>
 
+<!-- ==================== PRINTABLE QR CARD (only appears when printing) ==================== -->
+<div class="qr-card" id="qrCard" aria-hidden="true">
+  <div class="qr-card-inner">
+    <p class="qc-names" id="qcNames">Emma &amp; James</p>
+    <p class="qc-date" id="qcDate"></p>
+    <canvas id="qcCanvas" width="640" height="640"></canvas>
+    <p class="qc-line">Scan to open our wedding website</p>
+    <p class="qc-url" id="qcUrl"></p>
+  </div>
+</div>
+
 <!-- ==================== ADMIN (couple's settings, password-locked) ==================== -->
 <button class="admin-btn" id="adminBtn" type="button" aria-haspopup="dialog">
   <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M19.4 13.5a7.8 7.8 0 0 0 0-3l2-1.5-2-3.4-2.3 1a8 8 0 0 0-2.6-1.5L14.2 2h-4l-.3 2.6a8 8 0 0 0-2.6 1.5l-2.3-1-2 3.4L5 10a7.8 7.8 0 0 0 0 3l-2 1.5 2 3.4 2.3-1a8 8 0 0 0 2.6 1.5l.3 2.6h4l.3-2.6a8 8 0 0 0 2.6-1.5l2.3 1 2-3.4-2-1.5zM12 15.5A3.5 3.5 0 1 1 12 8.5a3.5 3.5 0 0 1 0 7z"/></svg>
@@ -986,8 +1019,15 @@ footer .f-heartline svg{width:14px; height:14px; fill:var(--accent); vertical-al
       <button class="adm-mini" id="admAddEvent" type="button">+ Add an event (e.g. Bridal Shower)</button>
 
       <p class="adm-group">Photos</p>
-      <p class="adm-note">Paste an image link, or pick a photo from this device.</p>
+      <p class="adm-note">Paste an image link, or pick a photo from this device. A Google Drive share link works too — in Drive, set that photo's sharing to "Anyone with the link", copy its link, and paste it here.</p>
       <div id="admPhotos"></div>
+
+      <p class="adm-group">Your QR Code</p>
+      <p class="adm-note">Guests scan this code to open your wedding website — print it on your invitations or stand it on a table at the venue. It always points at this page's own web address, wherever the site ends up hosted.</p>
+      <div class="adm-qr"><canvas id="admQrCanvas" width="216" height="216"></canvas></div>
+      <p class="adm-qr-url" id="admQrUrl"></p>
+      <button class="btn" id="admQrPrint" type="button" style="width:100%">Print QR Card</button>
+      <p class="adm-note">In the print window you can also pick "Save as PDF" — that saves this same card as a PDF file you can send to a print shop.</p>
 
       <p class="adm-group">Look &amp; Motion</p>
       <div class="adm-field"><label for="admTheme">Colour theme</label>
@@ -1203,7 +1243,10 @@ const CONFIG = {
      Paste your own photo links here (8 works best). Each one
      is just a web address for a picture. The demo pictures
      below are placeholders — swap them for yours. (In the
-     Admin panel you can also pick photos from your device.)
+     Admin panel you can also pick photos from your device.
+     Google Drive share links work too — the page converts
+     them by itself; just set the Drive photo's sharing to
+     "Anyone with the link" first.)
      ========================================================== */
   photos: [
     "https://picsum.photos/seed/emma-james-1/700/875",
@@ -1260,6 +1303,197 @@ try {
     Object.keys(merged).forEach((k) => { CONFIG[k] = merged[k]; });
   }
 } catch (e) { /* private mode / blocked storage — defaults still work */ }
+
+/* ---------- photo links: Google Drive normaliser ----------
+   A Google Drive SHARE link (…/file/d/<ID>/view, open?id=<ID>,
+   uc?id=<ID>…) is a web page, not a picture, so a browser cannot
+   show it in an <img>. imgSrc() rewrites any Drive file link to
+   Drive's direct thumbnail form (…/thumbnail?id=<ID>&sz=w1600),
+   which serves the photo itself. Every other link — including
+   photos picked from a device (data: links) — passes through
+   untouched. Used everywhere a photo is displayed: the story
+   chapters, the gallery, and the lightbox. */
+function imgSrc(url) {
+  if (!url || typeof url !== "string") return url;
+  if (url.indexOf("drive.google.com") === -1) return url;
+  let m = url.match(/\/file\/d\/([\w-]+)/);
+  if (!m) m = url.match(/[?&]id=([\w-]+)/);
+  if (!m) return url;
+  return "https://drive.google.com/thumbnail?id=" + m[1] + "&sz=w1600";
+}
+
+/* ---------- your QR code (built into this file) ----------
+   A compact QR encoder written for this page — no library and
+   no internet needed. Byte mode, error-correction level M,
+   versions 1–10 (any web address up to 213 characters).
+   makeQR(text) returns the module grid; drawQR() paints it. */
+const QR_EC_M = [
+  [10, [[1, 16]]], [16, [[1, 28]]], [26, [[1, 44]]], [18, [[2, 32]]],
+  [24, [[2, 43]]], [16, [[4, 27]]], [18, [[4, 31]]], [22, [[2, 38], [2, 39]]],
+  [22, [[3, 36], [2, 37]]], [26, [[4, 43], [1, 44]]]
+];
+const QR_ALIGN = [[], [6, 18], [6, 22], [6, 26], [6, 30], [6, 34], [6, 22, 38], [6, 24, 42], [6, 26, 46], [6, 28, 50]];
+const QR_EXP = [], QR_LOG = [];
+(function () { let x = 1; for (let i = 0; i < 255; i++) { QR_EXP[i] = x; QR_LOG[x] = i; x <<= 1; if (x & 256) x ^= 0x11d; } for (let i = 255; i < 512; i++) QR_EXP[i] = QR_EXP[i - 255]; })();
+function qrMul(a, b) { return a && b ? QR_EXP[QR_LOG[a] + QR_LOG[b]] : 0; }
+function qrDivisor(deg) {
+  let poly = [1];
+  for (let i = 0; i < deg; i++) {
+    const next = new Array(poly.length + 1).fill(0);
+    for (let j = 0; j < poly.length; j++) { next[j] ^= poly[j]; next[j + 1] ^= qrMul(poly[j], QR_EXP[i]); }
+    poly = next;
+  }
+  return poly;
+}
+function qrRemainder(data, divisor) {
+  const res = new Array(divisor.length - 1).fill(0);
+  data.forEach((b) => {
+    const factor = b ^ res.shift(); res.push(0);
+    for (let j = 0; j < res.length; j++) res[j] ^= qrMul(divisor[j + 1], factor);
+  });
+  return res;
+}
+function makeQR(text) {
+  const data = [];
+  for (let i = 0; i < text.length; i++) {
+    const c = text.charCodeAt(i);
+    if (c < 128) data.push(c);
+    else if (c < 2048) data.push(192 | (c >> 6), 128 | (c & 63));
+    else data.push(224 | (c >> 12), 128 | ((c >> 6) & 63), 128 | (c & 63));
+  }
+  let ver = 0, info = null, dataCap = 0;
+  for (let v = 1; v <= 10; v++) {
+    const inf = QR_EC_M[v - 1], cap = inf[1].reduce((s, g) => s + g[0] * g[1], 0);
+    if (4 + (v <= 9 ? 8 : 16) + data.length * 8 <= cap * 8) { ver = v; info = inf; dataCap = cap; break; }
+  }
+  if (!ver) return null;
+  const bits = [];
+  const push = (val, len) => { for (let i = len - 1; i >= 0; i--) bits.push((val >>> i) & 1); };
+  push(4, 4); push(data.length, ver <= 9 ? 8 : 16);
+  data.forEach((b) => push(b, 8));
+  const capBits = dataCap * 8;
+  push(0, Math.min(4, capBits - bits.length));
+  while (bits.length % 8) bits.push(0);
+  const bytes = [];
+  for (let i = 0; i < bits.length; i += 8) { let b = 0; for (let j = 0; j < 8; j++) b = (b << 1) | bits[i + j]; bytes.push(b); }
+  for (let pad = 0xec; bytes.length < dataCap; pad ^= 0xfd) bytes.push(pad);
+  const divisor = qrDivisor(info[0]), blocks = [], ecs = [];
+  let off = 0;
+  info[1].forEach((g) => { for (let n = 0; n < g[0]; n++) { const blk = bytes.slice(off, off + g[1]); off += g[1]; blocks.push(blk); ecs.push(qrRemainder(blk, divisor)); } });
+  const all = [];
+  const maxBlk = Math.max.apply(null, blocks.map((b) => b.length));
+  for (let i = 0; i < maxBlk; i++) blocks.forEach((b) => { if (i < b.length) all.push(b[i]); });
+  for (let i = 0; i < info[0]; i++) ecs.forEach((b) => all.push(b[i]));
+  const stream = [];
+  all.forEach((b) => { for (let i = 7; i >= 0; i--) stream.push((b >>> i) & 1); });
+  return qrMatrix(stream, ver);
+}
+function qrMatrix(stream, ver) {
+  const size = ver * 4 + 17;
+  const base = [], isFn = [];
+  for (let y = 0; y < size; y++) { base.push(new Array(size).fill(0)); isFn.push(new Array(size).fill(false)); }
+  const set = (x, y, v) => { if (x >= 0 && x < size && y >= 0 && y < size) { base[y][x] = v; isFn[y][x] = true; } };
+  for (let i = 0; i < size; i++) { set(i, 6, i % 2 ? 0 : 1); set(6, i, i % 2 ? 0 : 1); }
+  const finder = (cx, cy) => { for (let dy = -4; dy <= 4; dy++) for (let dx = -4; dx <= 4; dx++) { const d = Math.max(Math.abs(dx), Math.abs(dy)); set(cx + dx, cy + dy, d === 2 || d === 4 ? 0 : 1); } };
+  finder(3, 3); finder(size - 4, 3); finder(3, size - 4);
+  const al = QR_ALIGN[ver - 1];
+  al.forEach((cy) => al.forEach((cx) => {
+    if ((cx === al[0] && cy === al[0]) || (cx === al[al.length - 1] && cy === al[0]) || (cx === al[0] && cy === al[al.length - 1])) return;
+    for (let dy = -2; dy <= 2; dy++) for (let dx = -2; dx <= 2; dx++) set(cx + dx, cy + dy, Math.max(Math.abs(dx), Math.abs(dy)) === 1 ? 0 : 1);
+  }));
+  for (let i = 0; i <= 8; i++) { if (i !== 6) { isFn[8][i] = true; isFn[i][8] = true; } }
+  for (let i = 0; i < 8; i++) isFn[8][size - 1 - i] = true;
+  for (let i = 0; i < 7; i++) isFn[size - 1 - i][8] = true;
+  isFn[size - 8][8] = true;
+  if (ver >= 7) for (let i = 0; i < 18; i++) { isFn[Math.floor(i / 3)][size - 11 + (i % 3)] = true; isFn[size - 11 + (i % 3)][Math.floor(i / 3)] = true; }
+  const maskBit = (mask, x, y) => {
+    switch (mask) {
+      case 0: return (x + y) % 2 === 0;
+      case 1: return y % 2 === 0;
+      case 2: return x % 3 === 0;
+      case 3: return (x + y) % 3 === 0;
+      case 4: return (Math.floor(y / 2) + Math.floor(x / 3)) % 2 === 0;
+      case 5: return (x * y) % 2 + (x * y) % 3 === 0;
+      case 6: return ((x * y) % 2 + (x * y) % 3) % 2 === 0;
+      default: return ((x + y) % 2 + (x * y) % 3) % 2 === 0;
+    }
+  };
+  const fmtBits = (mask) => { let rem = mask; for (let i = 0; i < 10; i++) rem = (rem << 1) ^ ((rem >>> 9) * 0x537); return ((mask << 10) | rem) ^ 0x5412; };
+  const verBits = () => { let d = ver << 12; for (let i = 17; i >= 12; i--) if ((d >>> i) & 1) d ^= 0x1f25 << (i - 12); return (ver << 12) | d; };
+  let best = null, bestScore = Infinity;
+  for (let mask = 0; mask < 8; mask++) {
+    const m = base.map((row) => row.slice());
+    let bi = 0;
+    for (let right = size - 1; right >= 1; right -= 2) {
+      if (right === 6) right = 5;
+      for (let vert = 0; vert < size; vert++) for (let j = 0; j < 2; j++) {
+        const x = right - j, up = ((right + 1) & 2) === 0, y = up ? size - 1 - vert : vert;
+        if (!isFn[y][x]) { let bit = bi < stream.length ? stream[bi++] : 0; if (maskBit(mask, x, y)) bit ^= 1; m[y][x] = bit; }
+      }
+    }
+    const fb = fmtBits(mask), gb = (n, i) => (n >>> i) & 1;
+    for (let i = 0; i <= 5; i++) m[i][8] = gb(fb, i);
+    m[7][8] = gb(fb, 6); m[8][8] = gb(fb, 7); m[8][7] = gb(fb, 8);
+    for (let i = 9; i < 15; i++) m[8][14 - i] = gb(fb, i);
+    for (let i = 0; i < 8; i++) m[8][size - 1 - i] = gb(fb, i);
+    for (let i = 8; i < 15; i++) m[size - 15 + i][8] = gb(fb, i);
+    m[size - 8][8] = 1;
+    if (ver >= 7) { const vb = verBits(); for (let i = 0; i < 18; i++) { const bit = gb(vb, i); m[Math.floor(i / 3)][size - 11 + (i % 3)] = bit; m[size - 11 + (i % 3)][Math.floor(i / 3)] = bit; } }
+    const score = qrPenalty(m);
+    if (score < bestScore) { bestScore = score; best = m; }
+  }
+  return best;
+}
+function qrPenalty(m) {
+  const size = m.length;
+  let score = 0, dark = 0;
+  const runScore = (line) => {
+    let s = 0, color = line[0], len = 1;
+    for (let i = 1; i <= size; i++) {
+      if (i < size && line[i] === color) len++;
+      else { if (len >= 5) s += 3 + (len - 5); color = line[i]; len = 1; }
+    }
+    return s;
+  };
+  const patScore = (line) => {
+    let s = 0;
+    for (let i = 0; i + 11 <= size; i++) { const w = line.slice(i, i + 11).join(""); if (w === "00001011101" || w === "10111010000") s += 40; }
+    return s;
+  };
+  for (let y = 0; y < size; y++) score += runScore(m[y]) + patScore(m[y]);
+  for (let x = 0; x < size; x++) { const col = m.map((r) => r[x]); score += runScore(col) + patScore(col); }
+  for (let y = 0; y < size - 1; y++) for (let x = 0; x < size - 1; x++) { const c = m[y][x]; if (c === m[y][x + 1] && c === m[y + 1][x] && c === m[y + 1][x + 1]) score += 3; }
+  m.forEach((row) => row.forEach((c) => { dark += c; }));
+  const total = size * size, k = Math.ceil(Math.abs(dark * 20 - total * 10) / total) - 1;
+  return score + Math.max(0, k) * 10;
+}
+function drawQR(canvas, text, target) {
+  const grid = makeQR(text);
+  if (!grid) return false;
+  const size = grid.length, quiet = 4, total = size + quiet * 2;
+  const scale = Math.max(2, Math.round(target / total));
+  canvas.width = total * scale; canvas.height = total * scale;
+  const ctx = canvas.getContext("2d");
+  ctx.fillStyle = "#ffffff"; ctx.fillRect(0, 0, canvas.width, canvas.height);
+  ctx.fillStyle = "#2b2126";
+  for (let y = 0; y < size; y++) for (let x = 0; x < size; x++)
+    if (grid[y][x]) ctx.fillRect((x + quiet) * scale, (y + quiet) * scale, scale, scale);
+  return true;
+}
+function siteUrl() { return window.location.href.split("#")[0].split("?")[0]; }
+function renderQR() {
+  const gid = (id) => document.getElementById(id);
+  const url = siteUrl();
+  const au = gid("admQrUrl"); if (au) au.textContent = url;
+  const ac = gid("admQrCanvas"); if (ac) drawQR(ac, url, 216);
+  const qn = gid("qcNames"); if (qn) qn.textContent = CONFIG.brideName + " & " + CONFIG.groomName;
+  const qd = gid("qcDate"); if (qd) qd.textContent = CONFIG.weddingDateShort;
+  const qu = gid("qcUrl"); if (qu) qu.textContent = url;
+  const qc = gid("qcCanvas"); if (qc) drawQR(qc, url, 640);
+}
+renderQR();
+const admQrPrintBtn = document.getElementById("admQrPrint");
+if (admQrPrintBtn) admQrPrintBtn.addEventListener("click", () => { renderQR(); window.print(); });
 
 /* Keep the written-out date lines in step with weddingDateISO,
    so changing the date in one place updates them all. */
@@ -1383,7 +1617,7 @@ $("zigzag").innerHTML = CONFIG.story.map((m, i) => {
       '<p class="m-text">' + m.text + "</p>" +
     "</div>";
   const media =
-    '<div class="zz-media"><img src="' + (m.image || CONFIG.photos[i % CONFIG.photos.length]) +
+    '<div class="zz-media"><img src="' + imgSrc(m.image || CONFIG.photos[i % CONFIG.photos.length]) +
     '" alt="' + CONFIG.brideName + " and " + CONFIG.groomName + " — " + m.title + '" loading="lazy"></div>';
   return '<div class="zz-row' + (flip ? " flip" : "") + '">' + (flip ? media + body : body + media) + "</div>";
 }).join("");
@@ -1437,14 +1671,14 @@ const grid = $("galleryGrid");
 grid.innerHTML = CONFIG.photos.map((src, i) =>
   '<button class="g-item reveal' + (i % 4 === 1 ? " d1" : i % 4 === 2 ? " d2" : i % 4 === 3 ? " d3" : "") +
   '" type="button" data-idx="' + i + '" aria-label="Open photo ' + (i + 1) + ' of ' + CONFIG.brideName + " and " + CONFIG.groomName + '">' +
-  '<img src="' + src + '" alt="' + CONFIG.brideName + " and " + CONFIG.groomName + " — favourite moment " + (i + 1) + '" loading="lazy"></button>'
+  '<img src="' + imgSrc(src) + '" alt="' + CONFIG.brideName + " and " + CONFIG.groomName + " — favourite moment " + (i + 1) + '" loading="lazy"></button>'
 ).join("");
 
 const lb = $("lightbox"), lbImg = $("lbImg"), lbCap = $("lbCap");
 let lbIndex = 0;
 function showLb(i) {
   lbIndex = (i + CONFIG.photos.length) % CONFIG.photos.length;
-  lbImg.src = CONFIG.photos[lbIndex];
+  lbImg.src = imgSrc(CONFIG.photos[lbIndex]);
   lbImg.alt = CONFIG.brideName + " and " + CONFIG.groomName + " — favourite moment " + (lbIndex + 1);
   lbCap.textContent = (lbIndex + 1) + " of " + CONFIG.photos.length + " — " + CONFIG.hashtag;
 }
